@@ -53,3 +53,13 @@ This creates the necessary database table to store Expense records.
 
 This improves user experience by allowing quick searches and targeted views of expenses.
 
+## Stage 6: Monthly Report
+
+- Created `expense_report` view that shows:
+  - Total expenses for the current month
+  - Expenses grouped by category
+- Added template `expense_report.html` for display
+- Route: `/report/`
+
+This gives users a quick overview of their spending habits for the current month.
+

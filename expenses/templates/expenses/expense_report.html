@@ -1,0 +1,16 @@
+{% extends 'expenses/base.html' %}
+{% block content %}
+
+<h2>Expense Report for {{ month }} {{ year }}</h2>
+<p>Total spent: <strong>{{ total_amount }}</strong></p>
+
+<table>
+  <tr><th>Category</th><th>Total</th></tr>
+  {% for item in category_summary %}
+    <tr>
+      <td>{{ item.category }}</td>
+      <td>{{ item.total }}</td>
+    </tr>
+  {% endfor %}
+</table>
+{% endblock %}

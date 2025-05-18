@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .forms import ExpenseFrom
 from django.contrib.auth.decorators import login_required
 from .models import Expense
+from django.db.models import Sum
+from datetime import date
 
 @login_required
 def add_expense(request):
@@ -48,3 +50,26 @@ def delete_expense(request, expense_id):
     expense = get_object_or_404(Expense, id=expense_id, user=request.user)
     expense.delete()
     return redirect('expense_list')
+
+@login_required
+def expense_report(request):
+    today = date.today()
+    this_month_expenses = Expense.objects.filter(
+        user=request.user,
+        date__month=today.month,
+        date__year=today.year
+    )
+
+    total_amount = this_month_expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+
+    category_summary = this_month_expenses.values('category').annotate(
+        total=Sum('amount')
+    ).order_by('-total')
+
+    context = {
+        'total_amount': total_amount,
+        'category_summary': category_summary,
+        'month': today.strftime('%B'),
+        'year': today.year
+    }
+    return render(request, 'expenses/expense_report.html', context)
