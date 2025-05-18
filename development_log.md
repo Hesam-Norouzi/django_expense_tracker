@@ -23,5 +23,25 @@ python manage.py migrate
 ```
 This creates the necessary database table to store Expense records.
 
+## Stage 3: Add Expense Form & Template
 
-🚀 Status: Project is on progress
+- Created a `templates/expenses/add_expense.html` file to render the form for adding expenses.
+- Used Django’s `forms.ModelForm` to generate the form from the `Expense` model.
+- Created a `base.html` layout file for consistent design across pages.
+- The form is protected with CSRF token and rendered using `{{ form.as_p }}` for simplicity.
+
+📌 URL `/add/` now allows authenticated users to add new expenses.
+
+
+## Stage 5: Expense List and Delete Feature
+
+- Implemented `expense_list` view to show all expenses of the logged-in user.
+- Created `delete_expense` view to allow the user to delete their own expenses.
+- Updated `urls.py` with:
+  - `/` → expense list
+  - `/delete/<id>/` → delete view
+- Built `expense_list.html` to display expense table with delete buttons.
+- Protected both views with `@login_required`.
+
+🚀 Status: Users can now view and delete their own expenses.
+
