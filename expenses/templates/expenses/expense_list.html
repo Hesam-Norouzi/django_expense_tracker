@@ -1,11 +1,27 @@
 {% extends 'expenses/base.html' %}
 {% block content %}
   <h2>Your Expenses</h2>
-  <ul>
+  <table>
+    <tr>
+      <th>Title</th>
+      <th>Amount</th>
+      <th>Category</th>
+      <th>Date</th>
+      <th>Actions</th>
+    </tr>
     {% for expense in expenses %}
-      <li>{{ expense.date }} - {{ expense.title }}: {{ expense.amount }} ({{ expense.category }})</li>
-    {% empty %}
-      <li>No expenses found.</li>
+    <tr>
+      <td>{{ expense.title }}</td>
+      <td>{{ expense.amount }}</td>
+      <td>{{ expense.category }}</td>
+      <td>{{ expense.date }}</td>
+      <td>
+        <form method="post" action="{% url 'delete_expense' expense.id %}">
+          {% csrf_token %}
+          <button type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
     {% endfor %}
-  </ul>
+  </table>
 {% endblock %}

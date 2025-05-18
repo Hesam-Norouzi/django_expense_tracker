@@ -33,7 +33,7 @@ This creates the necessary database table to store Expense records.
 📌 URL `/add/` now allows authenticated users to add new expenses.
 
 
-## Stage 5: Expense List and Delete Feature
+## Stage 4: Expense List and Delete Feature
 
 - Implemented `expense_list` view to show all expenses of the logged-in user.
 - Created `delete_expense` view to allow the user to delete their own expenses.
@@ -44,4 +44,3 @@ This creates the necessary database table to store Expense records.
 - Protected both views with `@login_required`.
 
 🚀 Status: Users can now view and delete their own expenses.
-

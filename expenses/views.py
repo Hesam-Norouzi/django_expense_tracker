@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .forms import ExpenseFrom
 from django.contrib.auth.decorators import login_required
 from .models import Expense
@@ -21,3 +21,9 @@ def add_expense(request):
 def expense_list(request):
     expenses = Expense.objects.filter(user=request.user).order_by('-date')
     return render(request, 'expenses/expense_list.html', {'expenses': expenses})
+
+@login_required
+def delete_expense(request, expense_id):
+    expense = get_object_or_404(Expense, id=expense_id, user=request.user)
+    expense.delete()
+    return redirect('expense_list')
