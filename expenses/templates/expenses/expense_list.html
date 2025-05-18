@@ -15,7 +15,7 @@
     <input type="date" name="end_date" value="{{ end_date }}">
     <button type="submit">Filter</button>
   </form>
-  
+
   <table>
     <tr>
       <th>Title</th>
@@ -34,6 +34,7 @@
         <form method="post" action="{% url 'delete_expense' expense.id %}">
           {% csrf_token %}
           <button type="submit">Delete</button>
+          <a href="{% url 'edit_expense' expense.id %}">Edit</a>
         </form>
       </td>
     </tr>

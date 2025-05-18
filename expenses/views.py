@@ -73,3 +73,16 @@ def expense_report(request):
         'year': today.year
     }
     return render(request, 'expenses/expense_report.html', context)
+
+
+@login_required
+def edit_expense(request, expense_id):
+    expense = get_object_or_404(Expense, id=expense_id, user=request.user)
+    if request.method == 'POST':
+        form = ExpenseFrom(request.POST, instance=expense)
+        if form.is_valid():
+            form.save()
+            return redirect('expense_list')
+    else:
+        form = ExpenseFrom(instance=expense)
+    return render(request, 'expenses/edit_expense.html', {'form': form})

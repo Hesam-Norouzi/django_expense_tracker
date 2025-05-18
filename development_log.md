@@ -63,3 +63,11 @@ This improves user experience by allowing quick searches and targeted views of e
 
 This gives users a quick overview of their spending habits for the current month.
 
+## Stage 7: Edit Expense
+
+- Created `edit_expense` view to allow users to update their own expenses.
+- Added URL route: `edit/<int:expense_id>/`
+- Created template: `edit_expense.html` with a pre-filled form for editing.
+- Updated `expense_list.html` to include an "Edit" link per expense.
+
+This stage completed full CRUD functionality for user expenses.
