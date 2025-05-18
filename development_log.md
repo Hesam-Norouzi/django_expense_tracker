@@ -43,4 +43,13 @@ This creates the necessary database table to store Expense records.
 - Built `expense_list.html` to display expense table with delete buttons.
 - Protected both views with `@login_required`.
 
-🚀 Status: Users can now view and delete their own expenses.
+## Stage 5: Filtering and Searching Expenses
+
+- Updated `expense_list` view to support filtering by:
+  - Title (icontains)
+  - Category (exact match)
+  - Date range (`start_date` and `end_date`)
+- Added a form in `expense_list.html` to submit filters via GET method
+
+This improves user experience by allowing quick searches and targeted views of expenses.
+

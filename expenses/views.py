@@ -20,7 +20,28 @@ def add_expense(request):
 @login_required
 def expense_list(request):
     expenses = Expense.objects.filter(user=request.user).order_by('-date')
-    return render(request, 'expenses/expense_list.html', {'expenses': expenses})
+
+    title_query = request.GET.get('title')
+    category_query = request.GET.get('category')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    if title_query:
+        expenses = expenses.filter(title__icontains=title_query)
+    if category_query:
+        expenses = expenses.filter(category=category_query)
+    if start_date and end_date:
+        expenses = expenses.filter(date__range=[start_date, end_date])
+
+    context = {
+        'expenses': expenses,
+        'title_query': title_query,
+        'category_query': category_query,
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+    return render(request, 'expenses/expense_list.html', context)
+
 
 @login_required
 def delete_expense(request, expense_id):

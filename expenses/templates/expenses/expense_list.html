@@ -1,6 +1,21 @@
 {% extends 'expenses/base.html' %}
 {% block content %}
   <h2>Your Expenses</h2>
+  <form method="get" class="mb-4">
+    <input type="text" name="title" placeholder="Search title" value="{{ title_query }}">
+    <select name="category">
+      <option value="">All Categories</option>
+      <option value="FOOD" {% if category_query == 'FOOD' %}selected{% endif %}>Food</option>
+      <option value="Transportation" {% if category_query == 'Transportation' %}selected{% endif %}>Transportation</option>
+      <option value="Utilities" {% if category_query == 'Utilities' %}selected{% endif %}>Utilities</option>
+      <option value="Entertainment" {% if category_query == 'Entertainment' %}selected{% endif %}>Entertainment</option>
+      <option value="Other" {% if category_query == 'Other' %}selected{% endif %}>Other</option>
+    </select>
+    <input type="date" name="start_date" value="{{ start_date }}">
+    <input type="date" name="end_date" value="{{ end_date }}">
+    <button type="submit">Filter</button>
+  </form>
+  
   <table>
     <tr>
       <th>Title</th>
