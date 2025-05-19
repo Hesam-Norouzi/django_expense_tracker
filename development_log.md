@@ -71,3 +71,17 @@ This gives users a quick overview of their spending habits for the current month
 - Updated `expense_list.html` to include an "Edit" link per expense.
 
 This stage completed full CRUD functionality for user expenses.
+
+## Stage 8: Category Management Page
+
+- Created manage_categories view to allow users to manage their own categories (list, add, edit, delete).
+- Added URL route: /categories/ (secured via @login_required)
+- Created template: manage_categories.html with:
+- A table listing all current categories of the logged-in user.
+- Inline form to add a new category.
+- Inline forms for editing and deleting existing categories.
+- Ensured all operations stay on the same page (no redirects to separate add/edit/delete views).
+- Categories are user-specific and isolated from others.
+
+This stage laid the foundation for a clean, centralized interface to manage categories—preparing the app for future features like filtering, budgeting, and analytics.
+

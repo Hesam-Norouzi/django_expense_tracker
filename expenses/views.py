@@ -1,21 +1,22 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import ExpenseFrom
+from .forms import ExpenseForm, CategoryForm
 from django.contrib.auth.decorators import login_required
-from .models import Expense
+from .models import Expense, Category
 from django.db.models import Sum
 from datetime import date
+from django.http import JsonResponse
 
 @login_required
 def add_expense(request):
     if request.method == 'POST':
-        form = ExpenseFrom(request.POST)
+        form = ExpenseForm(request.POST or None, user=request.user)
         if form.is_valid():
             expense = form.save(commit=False)
             expense.user = request.user
             expense.save()
             return redirect('expense_list')
     else:
-        form = ExpenseFrom()
+        form = ExpenseForm()
     return render(request, 'expenses/add_expense.html', {'form': form})
 
 
@@ -79,10 +80,48 @@ def expense_report(request):
 def edit_expense(request, expense_id):
     expense = get_object_or_404(Expense, id=expense_id, user=request.user)
     if request.method == 'POST':
-        form = ExpenseFrom(request.POST, instance=expense)
+        form = ExpenseForm(request.POST or None, instance=expense, user=request.user)
         if form.is_valid():
             form.save()
             return redirect('expense_list')
     else:
-        form = ExpenseFrom(instance=expense)
+        form = ExpenseForm(instance=expense)
     return render(request, 'expenses/edit_expense.html', {'form': form})
+
+
+@login_required
+def manage_categories(request):
+    categories = Category.objects.filter(user=request.user)
+    form = CategoryForm()
+    return render(request, 'expenses/manage_categories.html', {'categories': categories, 'form': form})
+
+
+@login_required
+def add_category_ajax(request):
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            category = form.save(commit=False)
+            category.user = request.user
+            category.save()
+            return JsonResponse({'status': 'success', 'id': category.id, 'name': category.name})
+    return JsonResponse({'status': 'error', 'errors': form.errors})
+
+
+@login_required
+def edit_category_ajax(request, category_id):
+    category = get_object_or_404(Category, id=category_id, user=request.user)
+    if request.method == 'POST':
+        form = CategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'status': 'success', 'id': category.id, 'name': category.name})
+    return JsonResponse({'status': 'error'})
+
+
+@login_required
+def delete_category_ajax(request, category_id):
+    category = get_object_or_404(Category, id=category_id, user=request.user)
+    category.delete()
+    return JsonResponse({'status': 'success'})
+
