@@ -85,3 +85,13 @@ This stage completed full CRUD functionality for user expenses.
 
 This stage laid the foundation for a clean, centralized interface to manage categories—preparing the app for future features like filtering, budgeting, and analytics.
 
+## Stage 9: Refactor category management with AJAX and improved UI
+
+This commit refactors the category management feature to use AJAX for adding, editing, and deleting categories, providing a smoother user experience. It also includes UI improvements using Bootstrap for better styling and responsiveness.
+
+- Implemented AJAX for category creation, editing, and deletion.
+- Added client-side validation and feedback messages.
+- Improved UI using Bootstrap for better styling.
+- Added a unique constraint to the Category model to prevent duplicate categories for the same user.
+- Replaced form-based category management with AJAX calls for improved user experience.
+

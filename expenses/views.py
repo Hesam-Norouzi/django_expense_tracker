@@ -5,6 +5,8 @@ from .models import Expense, Category
 from django.db.models import Sum
 from datetime import date
 from django.http import JsonResponse
+from django.contrib import messages
+from django.db import IntegrityError
 
 @login_required
 def add_expense(request):
@@ -91,37 +93,75 @@ def edit_expense(request, expense_id):
 
 @login_required
 def manage_categories(request):
+    if request.method == 'POST':
+        if 'add_category' in request.POST:
+            name = request.POST.get('name', '').strip()
+            if name:
+                Category.objects.create(user=request.user, name=name)
+                messages.success(request, "Category added successfully.")
+            else:
+                messages.error(request, "Category name cannot be empty.")
+
+        elif 'edit_category' in request.POST:
+            category_id = request.POST.get('category_id')
+            new_name = request.POST.get('new_name', '').strip()
+            try:
+                category = Category.objects.get(id=category_id, user=request.user)
+                if new_name:
+                    category.name = new_name
+                    category.save()
+                    messages.success(request, "Category updated successfully.")
+                else:
+                    messages.error(request, "New category name cannot be empty.")
+            except Category.DoesNotExist:
+                messages.error(request, "Category not found.")
+
+        elif 'delete_category' in request.POST:
+            category_id = request.POST.get('category_id')
+            try:
+                category = Category.objects.get(id=category_id, user=request.user)
+                category.delete()
+                messages.success(request, "Category deleted successfully.")
+            except Category.DoesNotExist:
+                messages.error(request, "Category not found.")
+
     categories = Category.objects.filter(user=request.user)
-    form = CategoryForm()
-    return render(request, 'expenses/manage_categories.html', {'categories': categories, 'form': form})
+    return render(request, 'expenses/manage_categories.html', {'categories': categories})
 
 
-@login_required
 def add_category_ajax(request):
     if request.method == 'POST':
-        form = CategoryForm(request.POST)
-        if form.is_valid():
-            category = form.save(commit=False)
-            category.user = request.user
-            category.save()
+        name = request.POST.get('name', '').strip()
+        if not name:
+            return JsonResponse({'status': 'error', 'message': 'Category name required'})
+
+        try:
+            category, created = Category.objects.get_or_create(user=request.user, name=name)
+            if not created:
+                return JsonResponse({'status': 'error', 'message': 'This category already exists'})
             return JsonResponse({'status': 'success', 'id': category.id, 'name': category.name})
-    return JsonResponse({'status': 'error', 'errors': form.errors})
+        except IntegrityError:
+            return JsonResponse({'status': 'error', 'message': 'Category already exists'})
+
 
 
 @login_required
 def edit_category_ajax(request, category_id):
     category = get_object_or_404(Category, id=category_id, user=request.user)
     if request.method == 'POST':
-        form = CategoryForm(request.POST, instance=category)
-        if form.is_valid():
-            form.save()
+        new_name = request.POST.get('name', '').strip()
+        if new_name:
+            category.name = new_name
+            category.save()
             return JsonResponse({'status': 'success', 'id': category.id, 'name': category.name})
-    return JsonResponse({'status': 'error'})
+        return JsonResponse({'status': 'error', 'message': 'New name cannot be empty.'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
 
 @login_required
 def delete_category_ajax(request, category_id):
     category = get_object_or_404(Category, id=category_id, user=request.user)
-    category.delete()
-    return JsonResponse({'status': 'success'})
-
+    if request.method == 'POST':
+        category.delete()
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
