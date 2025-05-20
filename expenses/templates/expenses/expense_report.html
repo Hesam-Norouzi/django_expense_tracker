@@ -7,10 +7,10 @@
 <table>
   <tr><th>Category</th><th>Total</th></tr>
   {% for item in category_summary %}
-    <tr>
-      <td>{{ item.category }}</td>
-      <td>{{ item.total }}</td>
-    </tr>
-  {% endfor %}
+  <tr>
+    <td>{{ item.category__name }}</td>
+    <td>{{ item.total }}</td>
+  </tr>
+{% endfor %}
 </table>
 {% endblock %}

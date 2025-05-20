@@ -18,7 +18,7 @@ def add_expense(request):
             expense.save()
             return redirect('expense_list')
     else:
-        form = ExpenseForm()
+        form = ExpenseForm(user=request.user)
     return render(request, 'expenses/add_expense.html', {'form': form})
 
 
@@ -34,7 +34,7 @@ def expense_list(request):
     if title_query:
         expenses = expenses.filter(title__icontains=title_query)
     if category_query:
-        expenses = expenses.filter(category=category_query)
+        expenses = expenses.filter(category__id=category_query)
     if start_date and end_date:
         expenses = expenses.filter(date__range=[start_date, end_date])
 
@@ -65,9 +65,9 @@ def expense_report(request):
 
     total_amount = this_month_expenses.aggregate(Sum('amount'))['amount__sum'] or 0
 
-    category_summary = this_month_expenses.values('category').annotate(
+    category_summary = this_month_expenses.values('category__name').annotate(
         total=Sum('amount')
-    ).order_by('-total')
+        ).order_by('-total')
 
     context = {
         'total_amount': total_amount,
@@ -87,7 +87,7 @@ def edit_expense(request, expense_id):
             form.save()
             return redirect('expense_list')
     else:
-        form = ExpenseForm(instance=expense)
+        form = ExpenseForm(user=request.user)
     return render(request, 'expenses/edit_expense.html', {'form': form})
 
 
