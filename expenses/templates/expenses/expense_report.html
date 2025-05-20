@@ -1,16 +1,26 @@
 {% extends 'expenses/base.html' %}
 {% block content %}
+<div class="mb-4">
+  <h2>Expense Report for {{ month }} {{ year }}</h2>
+  <p><strong>Total Spent:</strong> ${{ total_amount }}</p>
+</div>
 
-<h2>Expense Report for {{ month }} {{ year }}</h2>
-<p>Total spent: <strong>{{ total_amount }}</strong></p>
-
-<table>
-  <tr><th>Category</th><th>Total</th></tr>
-  {% for item in category_summary %}
-  <tr>
-    <td>{{ item.category__name }}</td>
-    <td>{{ item.total }}</td>
-  </tr>
-{% endfor %}
+<table class="table table-bordered">
+  <thead class="table-light">
+    <tr>
+      <th>Category</th>
+      <th>Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in category_summary %}
+    <tr>
+      <td>{{ item.category }}</td>
+      <td>${{ item.total }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="2">No data for this month.</td></tr>
+    {% endfor %}
+  </tbody>
 </table>
 {% endblock %}

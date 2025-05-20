@@ -19,7 +19,12 @@ def add_expense(request):
             return redirect('expense_list')
     else:
         form = ExpenseForm(user=request.user)
-    return render(request, 'expenses/add_expense.html', {'form': form})
+    return render(request, 'expenses/add_expense.html', {
+    'form': form,
+    'view_title': 'Add New Expense',
+    'button_text': 'Save'
+})
+
 
 
 @login_required
@@ -88,7 +93,12 @@ def edit_expense(request, expense_id):
             return redirect('expense_list')
     else:
         form = ExpenseForm(user=request.user)
-    return render(request, 'expenses/edit_expense.html', {'form': form})
+    return render(request, 'expenses/edit_expense.html', {
+    'form': form,
+    'view_title': 'Edit Expense',
+    'button_text': 'Save'
+})
+
 
 
 @login_required
