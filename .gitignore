@@ -18,3 +18,4 @@ db.sqlite3
 # Media files
 /media/
 /var/www/django_media/
+db.sqlite3
