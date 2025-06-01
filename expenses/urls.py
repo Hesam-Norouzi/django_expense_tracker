@@ -11,6 +11,8 @@ urlpatterns = [
     path('categories/add/', views.add_category_ajax, name='add_category_ajax'),
     path('categories/edit/<int:category_id>/', views.edit_category_ajax, name='edit_category_ajax'),
     path('categories/delete/<int:category_id>/', views.delete_category_ajax, name='delete_category_ajax'),
+    path('dashboard/', views.dashboard, name='dashboard'),
+    path('dashboard/data/', views.dashboard_data, name='dashboard_data'),
 
 
 ]

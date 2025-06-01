@@ -1,0 +1,147 @@
+{% extends 'expenses/base.html' %}
+{% block content %}
+<h2 class="mb-6 text-2xl font-bold text-gray-800">Dashboard</h2>
+
+<!-- Statistic Cards -->
+<div id="stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+
+  <!-- Total Spent -->
+  <div class="bg-white shadow rounded-xl p-4 flex items-center space-x-3">
+    <div class="bg-blue-100 text-blue-600 rounded-full p-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+           viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm0 9c-3.314 0-6-2.686-6-6s2.686-6 
+                 6-6 6 2.686 6 6-2.686 6-6 6z"/>
+      </svg>
+    </div>
+    <div>
+      <p class="text-gray-500 text-sm">Total Spent</p>
+      <p class="text-lg font-semibold text-gray-800" id="stat-total">$0</p>
+    </div>
+  </div>
+
+  <!-- Transactions -->
+  <div class="bg-white shadow rounded-xl p-4 flex items-center space-x-3">
+    <div class="bg-green-100 text-green-600 rounded-full p-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+           viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M5 13l4 4L19 7"/>
+      </svg>
+    </div>
+    <div>
+      <p class="text-gray-500 text-sm">Transactions</p>
+      <p class="text-lg font-semibold text-gray-800" id="stat-transactions">0</p>
+    </div>
+  </div>
+
+  <!-- Top Category -->
+  <div class="bg-white shadow rounded-xl p-4 flex items-center space-x-3">
+    <div class="bg-yellow-100 text-yellow-600 rounded-full p-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+           viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M11 17a4 4 0 0 0 4-4V5a4 4 0 1 0-8 0v8a4 4 0 0 0 4 4zm0 0v2m-5 1h10"/>
+      </svg>
+    </div>
+    <div>
+      <p class="text-gray-500 text-sm">Top Category</p>
+      <p class="text-lg font-semibold text-gray-800" id="stat-top-category">-</p>
+    </div>
+  </div>
+</div>
+
+<!-- More Stats -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+  <div class="bg-white shadow rounded-xl p-4">
+    <p class="text-gray-500 text-sm">Average Expense</p>
+    <p class="text-lg font-semibold text-gray-800" id="stat-avg">$0</p>
+  </div>
+  <div class="bg-white shadow rounded-xl p-4">
+    <p class="text-gray-500 text-sm">Max Expense</p>
+    <p class="text-lg font-semibold text-gray-800" id="stat-max">$0</p>
+  </div>
+  <div class="bg-white shadow rounded-xl p-4">
+    <p class="text-gray-500 text-sm">Last Expense Date</p>
+    <p class="text-lg font-semibold text-gray-800" id="stat-last">-</p>
+  </div>
+  <div class="bg-white shadow rounded-xl p-4">
+    <p class="text-gray-500 text-sm">Growth from Last Month</p>
+    <p class="text-lg font-semibold text-gray-800" id="stat-growth">-</p>
+  </div>
+</div>
+
+<!-- Charts -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  <div class="bg-white shadow rounded-xl p-4">
+    <h3 class="text-lg font-semibold mb-2 text-gray-700">This Month by Category</h3>
+    <canvas id="pieChart" class="w-full h-64"></canvas>
+  </div>
+
+  <div class="bg-white shadow rounded-xl p-4">
+    <h3 class="text-lg font-semibold mb-2 text-gray-700">Monthly Totals</h3>
+    <canvas id="barChart" class="w-full h-64"></canvas>
+  </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  fetch("{% url 'dashboard_data' %}")
+    .then(response => response.json())
+    .then(data => {
+      // Pie Chart
+      const ctx = document.getElementById('pieChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: data.category_labels,
+          datasets: [{
+            data: data.category_data,
+            backgroundColor: ['#f87171', '#60a5fa', '#34d399', '#fbbf24', '#a78bfa']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+        }
+      });
+
+      // Bar Chart
+      const barCtx = document.getElementById('barChart').getContext('2d');
+      new Chart(barCtx, {
+        type: 'bar',
+        data: {
+          labels: data.months,
+          datasets: [{
+            label: 'Monthly Expenses',
+            data: data.month_totals,
+            backgroundColor: '#60a5fa'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+
+      // Fill statistic cards
+      // document.getElementById('stat-total').innerText = `$${data.total_spent.toFixed(2)}`;
+      document.getElementById('stat-total').innerText = `$${parseFloat(data.total_spent).toFixed(2)}`;
+      document.getElementById('stat-transactions').innerText = parseFloat(data.count_expenses);
+      document.getElementById('stat-top-category').innerText = data.top_category || '-';
+      document.getElementById('stat-avg').innerText = `$${parseFloat(data.avg_expense).toFixed(2)}`;
+      document.getElementById('stat-max').innerText = `$${parseFloat(data.max_expense).toFixed(2)}`;
+      document.getElementById('stat-last').innerText = data.last_date;
+      document.getElementById('stat-growth').innerText = data.growth_percent !== null
+        ? `${parseFloat(data.growth_percent).toFixed(2)}%`
+        : 'N/A';
+    });
+</script>
+{% endblock %}

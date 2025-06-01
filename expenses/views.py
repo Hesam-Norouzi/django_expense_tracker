@@ -1,12 +1,18 @@
-from django.shortcuts import render, redirect, get_object_or_404
 from .forms import ExpenseForm, CategoryForm
-from django.contrib.auth.decorators import login_required
 from .models import Expense, Category
-from django.db.models import Sum
-from datetime import date
+from datetime import date, timedelta
+import calendar
+from django.utils import timezone
+from django.utils.timezone import now
 from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
+from django.db.models import Sum, Avg, Max, Count
+from django.db.models.functions import TruncMonth
+from django.views.decorators.http import require_GET
+
 
 @login_required
 def add_expense(request):
@@ -92,7 +98,7 @@ def edit_expense(request, expense_id):
             form.save()
             return redirect('expense_list')
     else:
-        form = ExpenseForm(user=request.user)
+        form = ExpenseForm(user=request.user, instance=expense)
     return render(request, 'expenses/edit_expense.html', {
     'form': form,
     'view_title': 'Edit Expense',
@@ -175,3 +181,90 @@ def delete_category_ajax(request, category_id):
         category.delete()
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+
+@login_required
+def dashboard(request):
+    return render(request, 'expenses/dashboard.html')
+
+@login_required
+@require_GET
+def dashboard_data(request):
+    user = request.user
+    today = now()
+    current_month = today.month
+    current_year = today.year
+
+    # All expenses for this user
+    expenses = Expense.objects.filter(user=user)
+
+    # --- Monthly Stats ---
+    monthly_expenses = expenses.filter(date__year=current_year, date__month=current_month)
+
+    total_spent = monthly_expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+    count_expenses = monthly_expenses.count()
+    avg_expense = monthly_expenses.aggregate(Avg('amount'))['amount__avg'] or 0
+    max_expense = monthly_expenses.aggregate(Max('amount'))['amount__max'] or 0
+    last_expense = monthly_expenses.order_by('-date').first()
+    last_date = last_expense.date.strftime("%Y-%m-%d") if last_expense else "N/A"
+
+    # --- Growth compared to previous month ---
+    previous_month = current_month - 1 or 12
+    previous_year = current_year if current_month > 1 else current_year - 1
+
+    prev_total = expenses.filter(date__year=previous_year, date__month=previous_month)\
+                         .aggregate(Sum('amount'))['amount__sum'] or 0
+    growth = ((total_spent - prev_total) / prev_total) * 100 if prev_total > 0 else None
+
+    # --- Pie Chart: category distribution for current month ---
+    category_data_qs = monthly_expenses.values('category__name').annotate(
+        total=Sum('amount')
+    ).order_by('-total')
+
+    category_labels = [item['category__name'] or 'Uncategorized' for item in category_data_qs]
+    category_data = [float(item['total']) for item in category_data_qs]
+
+    top_category = category_data_qs[0]['category__name'] if category_data_qs else "N/A"
+
+    # --- Bar Chart: total per month for this year ---
+    month_labels = []
+    monthly_totals = []
+
+    for i in range(1, 13):
+        label = calendar.month_abbr[i]
+        month_labels.append(label)
+        total = expenses.filter(date__year=current_year, date__month=i)\
+                        .aggregate(Sum('amount'))['amount__sum'] or 0
+        monthly_totals.append(float(total))
+
+    # --- Last 6 months (optional: use if needed for line/bar chart) ---
+    last_6_months_qs = expenses.filter(
+        date__gte=today.replace(day=1) - timedelta(days=180)
+    ).annotate(month=TruncMonth('date')).values('month').annotate(
+        total=Sum('amount')
+    ).order_by('month')
+
+    last_6_months = [item['month'].strftime('%b %Y') for item in last_6_months_qs]
+    last_6_totals = [float(item['total']) for item in last_6_months_qs]
+
+    return JsonResponse({
+        # Pie chart
+        'category_labels': category_labels,
+        'category_data': category_data,
+
+        # Bar chart (12 months)
+        'months': month_labels,
+        'month_totals': monthly_totals,
+
+        # Optional last 6 months
+        'last_6_months': last_6_months,
+        'last_6_totals': last_6_totals,
+
+        # Stats
+        'total_spent': round(total_spent, 2),
+        'count_expenses': count_expenses,
+        'avg_expense': round(avg_expense, 2),
+        'max_expense': round(max_expense, 2),
+        'last_date': last_date,
+        'growth_percent': round(growth, 2) if growth is not None else None,
+        'top_category': top_category,
+    })
