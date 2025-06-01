@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+django_venv/
+.env
+
+# Django
+db.sqlite3
+*.log
+
+# VS Code
+.vscode/
+
+# Media files
+/media/
+/var/www/django_media/
